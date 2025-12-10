@@ -51,19 +51,24 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
 
-      - name: 📚 Install dependencies
+      - name: Install dependencies
+        working-directory: ./backend
         run: npm ci
 
       - name: 🔍 Run ESLint
+        working-directory: ./backend
         run: npm run lint
         continue-on-error: true
 
-      - name: 🎨 Check code format
+      - name: Check code format
+        working-directory: ./backend
         run: npm run format -- --check
         continue-on-error: true
 
       - name: 🧪 Run unit tests
+        working-directory: ./backend
         run: npm run test:cov
         env:
           NODE_ENV: test
@@ -72,14 +77,15 @@ jobs:
           REDIS_PORT: 6379
           JWT_SECRET: test-secret-key-${{ github.run_id }}
 
-      - name: 🥒 Run Gherkin/BDD tests
+      - name: Run Gherkin/BDD tests
+        working-directory: ./backend
         run: npm run test:gherkin
         continue-on-error: true
 
       - name: 📊 Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage/coverage-final.json
+          files: ./backend/coverage/coverage-final.json
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
@@ -90,7 +96,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const coverage = require('./coverage/coverage-summary.json');
+            const coverage = require('./backend/coverage/coverage-summary.json');
             const statements = coverage.total.statements.pct;
             const color = statements >= 85 ? 'green' : statements >= 70 ? 'yellow' : 'red';
             console.log(`Coverage: ${statements}% ${color}`);
@@ -101,8 +107,8 @@ jobs:
         with:
           name: test-results-${{ matrix.node-version }}
           path: |
-            coverage/
-            cucumber-report.json
+            backend/coverage/
+            backend/cucumber-report.json
           retention-days: 30
 
       - name: 📋 Test Report Summary

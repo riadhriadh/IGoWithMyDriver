@@ -38,11 +38,14 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
 
       - name: 📚 Install dependencies
+        working-directory: ./backend
         run: npm ci
 
       - name: 🏗️ Build application
+        working-directory: ./backend
         run: npm run build
         env:
           NODE_ENV: production
@@ -60,7 +63,7 @@ jobs:
       - name: 🐳 Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./backend
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
