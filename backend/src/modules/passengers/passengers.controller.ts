@@ -23,7 +23,7 @@ export class PassengersController {
   @ApiOperation({ summary: 'Update passenger profile' })
   async updateProfile(@GetUser() user: any, @Body() updateData: any) {
     const passenger = await this.passengersService.findByUserId(user._id);
-    return this.passengersService.update(passenger._id, updateData);
+    return this.passengersService.update(passenger._id.toString(), updateData);
   }
 
   @Get()

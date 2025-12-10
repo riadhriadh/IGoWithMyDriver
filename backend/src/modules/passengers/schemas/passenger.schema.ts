@@ -17,7 +17,7 @@ export class Passenger {
   @Prop([String])
   favoriteLocations?: string[];
 
-  @Prop([Types.ObjectId], { ref: 'Payment' })
+  @Prop({ type: [Types.ObjectId], ref: 'Payment' })
   paymentMethods?: Types.ObjectId[];
 
   @Prop({ type: Object, default: null })

@@ -32,7 +32,7 @@ export class DriversController {
   @ApiOperation({ summary: 'Update driver profile' })
   async updateProfile(@GetUser() user: any, @Body() updateDriverDto: UpdateDriverDto) {
     const driver = await this.driversService.findByUserId(user._id);
-    return this.driversService.update(driver._id, updateDriverDto);
+    return this.driversService.update(driver._id.toString(), updateDriverDto);
   }
 
   @Patch(':id/location')

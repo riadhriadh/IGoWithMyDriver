@@ -36,7 +36,7 @@ import { HealthModule } from '@modules/health/health.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        store: redisStore,
+        store: redisStore as any,
         host: configService.get<string>('redis.host'),
         port: configService.get<number>('redis.port'),
         password: configService.get<string>('redis.password'),
