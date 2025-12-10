@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongo:
+    image: mongo:7.0
+    container_name: taxi-vtc-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: taxi_user
+      MONGO_INITDB_ROOT_PASSWORD: taxi_password_123
+      MONGO_INITDB_DATABASE: taxi-vtc
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/init.js
+    networks:
+      - taxi-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7.2-alpine
+    container_name: taxi-vtc-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass redis_password_123
+    volumes:
+      - redis-data:/data
+    networks:
+      - taxi-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # NestJS Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taxi-vtc-api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://taxi_user:taxi_password_123@mongo:27017/taxi-vtc?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password_123
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - taxi-network
+    volumes:
+      - ./src:/app/src
+      - ./uploads:/app/uploads
+    command: npm run start:dev
+
+  # MongoDB Express (Optional - for development)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: taxi-vtc-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: taxi_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: taxi_password_123
+      ME_CONFIG_MONGODB_URL: mongodb://taxi_user:taxi_password_123@mongo:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: pass
+    depends_on:
+      - mongo
+    networks:
+      - taxi-network
+
+networks:
+  taxi-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  redis-data:
