@@ -27,8 +27,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: 📦 Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-node-20-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-20-
+            ${{ runner.os }}-node-
 
       - name: 📚 Install dependencies
         working-directory: ./backend
