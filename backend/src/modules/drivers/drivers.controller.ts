@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, UseGuards, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Patch, UseGuards, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { DriversService } from './drivers.service';
 import { UpdateDriverDto } from './dto/update-driver.dto';
@@ -158,6 +158,26 @@ export class DriversController {
   async getSchedules(@GetUser() user: any, @Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     // TODO: Implement schedules endpoint
     return { schedules: [] };
+  }
+
+  @Post('schedules')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create driver schedule' })
+  async createSchedule(@GetUser() user: any, @Body() body: any) {
+    // TODO: Implement schedule creation
+    console.log('Create schedule for driver:', user._id, body);
+    return { message: 'Schedule created successfully', schedule: { id: 'temp-id', ...body } };
+  }
+
+  @Delete('schedules/:id')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete driver schedule' })
+  async deleteSchedule(@GetUser() user: any, @Param('id') id: string) {
+    // TODO: Implement schedule deletion
+    console.log('Delete schedule:', id, 'for driver:', user._id);
+    return { message: 'Schedule deleted successfully' };
   }
 
   @Get('incidents')
