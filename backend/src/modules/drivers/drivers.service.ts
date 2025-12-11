@@ -88,19 +88,28 @@ export class DriversService {
 
     // 2. Cache in Redis for fast access
     const cacheKey = `driver:location:${id}`;
-    await this.cacheManager.set(cacheKey, locationData, 300000); // TTL: 5 minutes
-    
-    console.log(`📍 Position cachée dans Redis: ${cacheKey} → ${latitude}, ${longitude}`);
+    try {
+      await this.cacheManager.set(cacheKey, locationData, 300); // TTL: 5 minutes (in seconds)
+      console.log(`📍 Position cachée dans Redis: ${cacheKey} → ${latitude}, ${longitude}`);
+    } catch (error) {
+      console.error('Redis cache error (non-blocking):', error.message);
+      // Continue même si Redis échoue
+    }
   }
 
   async getDriverLocation(id: string): Promise<{ latitude: number; longitude: number } | null> {
     // 1. Try Redis cache first (fast)
     const cacheKey = `driver:location:${id}`;
-    const cached = await this.cacheManager.get<{ latitude: number; longitude: number; updatedAt: Date }>(cacheKey);
     
-    if (cached) {
-      console.log(`✅ Position récupérée depuis Redis: ${cacheKey}`);
-      return { latitude: cached.latitude, longitude: cached.longitude };
+    try {
+      const cached = await this.cacheManager.get<{ latitude: number; longitude: number; updatedAt: Date }>(cacheKey);
+      
+      if (cached) {
+        console.log(`✅ Position récupérée depuis Redis: ${cacheKey}`);
+        return { latitude: cached.latitude, longitude: cached.longitude };
+      }
+    } catch (error) {
+      console.log('Redis cache miss (fallback to MongoDB)');
     }
 
     // 2. Fallback to MongoDB
@@ -113,10 +122,14 @@ export class DriversService {
       };
       
       // Cache it for next time
-      await this.cacheManager.set(cacheKey, 
-        { ...location, updatedAt: driver.locationUpdatedAt || new Date() },
-        300000
-      );
+      try {
+        await this.cacheManager.set(cacheKey, 
+          { ...location, updatedAt: driver.locationUpdatedAt || new Date() },
+          300 // TTL in seconds
+        );
+      } catch (error) {
+        console.log('Could not cache location in Redis (non-blocking)');
+      }
       
       return location;
     }
