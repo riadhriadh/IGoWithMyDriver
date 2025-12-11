@@ -35,10 +35,31 @@ export class DriversController {
     };
   }
 
+  @Get('locations')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all online driver locations (for map view)' })
+  async getAllLocations(@GetUser() user: any) {
+    const locations = await this.driversService.getAllDriverLocations();
+    return { locations };
+  }
+
   @Get('nearby')
   @ApiOperation({ summary: 'Find nearby available drivers' })
   async findNearby(@Query('latitude') latitude: number, @Query('longitude') longitude: number) {
     return this.driversService.findNearby(latitude, longitude);
+  }
+
+  @Get('location/:driverId')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get specific driver location (from Redis cache)' })
+  async getDriverLocation(@Param('driverId') driverId: string) {
+    const location = await this.driversService.getDriverLocation(driverId);
+    if (!location) {
+      throw new NotFoundException('Driver location not found');
+    }
+    return { location };
   }
 
   @Patch('profile')
