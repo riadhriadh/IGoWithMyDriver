@@ -24,6 +24,11 @@ export class DriversService {
     return driver;
   }
 
+  async create(driverData: any): Promise<DriverDocument> {
+    const driver = new this.driverModel(driverData);
+    return driver.save();
+  }
+
   async findAll(skip = 0, limit = 10): Promise<DriverDocument[]> {
     return this.driverModel.find().skip(skip).limit(limit).populate('userId').exec();
   }

@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcryptjs from 'bcryptjs';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UsersService } from '@modules/users/users.service';
+import { DriversService } from '@modules/drivers/drivers.service';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +13,8 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    @Inject(forwardRef(() => DriversService))
+    private driversService: DriversService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -28,6 +31,23 @@ export class AuthService {
       password: hashedPassword,
       userType: registerDto.userType || 'driver',
     });
+
+    // Create driver profile if user is a driver
+    if (user.userType === 'driver') {
+      try {
+        await this.driversService.create({
+          userId: user._id,
+          status: 'offline',
+          isAvailable: false,
+          isOnline: false,
+          rating: 0,
+          totalRides: 0,
+        });
+      } catch (error) {
+        console.error('Error creating driver profile:', error);
+        // Don't fail registration if driver profile creation fails
+      }
+    }
 
     const tokens = this.generateTokens(user._id.toString(), user.email, user.userType);
 

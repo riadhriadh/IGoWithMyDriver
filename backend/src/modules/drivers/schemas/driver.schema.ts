@@ -14,6 +14,9 @@ export class Driver {
   @Prop({ default: false })
   isOnline: boolean;
 
+  @Prop({ default: false })
+  isAvailable: boolean;
+
   @Prop({ type: Object })
   location?: {
     latitude: number;
