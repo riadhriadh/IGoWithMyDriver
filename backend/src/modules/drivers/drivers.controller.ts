@@ -159,6 +159,16 @@ export class DriversController {
     return { incidents: [] };
   }
 
+  @Post('push-token')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Save push notification token' })
+  async savePushToken(@GetUser() user: any, @Body() body: { token: string }) {
+    // TODO: Save push token to driver profile
+    console.log('Push token received for user:', user._id, 'Token:', body.token);
+    return { message: 'Push token saved successfully' };
+  }
+
   @Patch(':id/location')
   @UseGuards(PassportAuthGuard)
   @ApiBearerAuth()
