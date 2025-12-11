@@ -2,8 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
 export enum RideStatus {
+  PENDING = 'pending',
   REQUESTED = 'requested',
   ACCEPTED = 'accepted',
+  ARRIVED = 'arrived',
+  IN_PROGRESS = 'in_progress',
   EN_ROUTE_TO_PICKUP = 'en_route_to_pickup',
   ARRIVED_AT_PICKUP = 'arrived_at_pickup',
   PASSENGER_ONBOARD = 'passenger_onboard',
@@ -47,7 +50,7 @@ export class Ride {
   @Prop({ default: 0 })
   actualFare: number;
 
-  @Prop({ required: true, enum: Object.values(RideStatus), default: RideStatus.REQUESTED })
+  @Prop({ required: true, enum: Object.values(RideStatus), default: RideStatus.PENDING })
   status: RideStatus;
 
   @Prop({ default: 'economy' })
@@ -80,11 +83,20 @@ export class Ride {
   @Prop()
   cancelledReason?: string;
 
+  @Prop()
+  distance?: number;
+
+  @Prop()
+  duration?: number;
+
   @Prop({ type: Object })
   route?: {
     distance: number;
     duration: number;
   };
+
+  @Prop()
+  finalPrice?: number;
 
   @Prop({ min: 1, max: 5 })
   rating?: number;
