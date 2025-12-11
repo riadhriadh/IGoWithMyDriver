@@ -189,6 +189,63 @@ export class DriversController {
     return { incidents: [] };
   }
 
+  @Post('incidents')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create driver incident' })
+  async createIncident(@GetUser() user: any, @Body() body: any) {
+    // TODO: Implement incident creation
+    console.log('Create incident for driver:', user._id, body);
+    return { incident: { id: 'temp-id', ...body } };
+  }
+
+  @Get('documents')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get driver documents' })
+  async getDocuments(@GetUser() user: any, @Query('type') type?: string, @Query('status') status?: string) {
+    // TODO: Implement documents endpoint
+    return { documents: [] };
+  }
+
+  @Get('documents/expiring')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get expiring documents' })
+  async getExpiringDocuments(@GetUser() user: any, @Query('days') days = 30) {
+    // TODO: Implement expiring documents endpoint
+    return { documents: [] };
+  }
+
+  @Get('documents/expired')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get expired documents' })
+  async getExpiredDocuments(@GetUser() user: any) {
+    // TODO: Implement expired documents endpoint
+    return { documents: [] };
+  }
+
+  @Post('documents')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload driver document' })
+  async uploadDocument(@GetUser() user: any, @Body() body: any) {
+    // TODO: Implement document upload with file handling
+    console.log('Upload document for driver:', user._id, body);
+    return { document: { id: 'temp-id', ...body } };
+  }
+
+  @Delete('documents/:id')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete driver document' })
+  async deleteDocument(@GetUser() user: any, @Param('id') id: string) {
+    // TODO: Implement document deletion
+    console.log('Delete document:', id, 'for driver:', user._id);
+    return { message: 'Document deleted successfully' };
+  }
+
   @Post('push-token')
   @UseGuards(PassportAuthGuard)
   @ApiBearerAuth()
