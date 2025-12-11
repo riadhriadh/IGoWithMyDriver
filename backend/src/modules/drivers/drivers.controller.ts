@@ -17,7 +17,22 @@ export class DriversController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current driver profile' })
   async getProfile(@GetUser() user: any) {
-    return this.driversService.findByUserId(user._id);
+    const driver = await this.driversService.findByUserId(user._id);
+    const userData = driver.userId as any;
+    
+    return {
+      driver: {
+        id: driver._id.toString(),
+        email: userData.email,
+        fullName: `${userData.firstName} ${userData.lastName}`,
+        phone: userData.phone,
+        avatarUrl: userData.avatarUrl,
+        status: driver.status,
+        rating: driver.rating,
+        totalRides: driver.totalRides,
+        vehicleInfo: null, // TODO: Populate from vehicles collection
+      },
+    };
   }
 
   @Get('nearby')
