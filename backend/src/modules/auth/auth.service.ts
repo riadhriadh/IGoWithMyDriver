@@ -33,8 +33,29 @@ export class AuthService {
 
     await this.usersService.updateRefreshToken(user._id.toString(), tokens.refreshToken);
 
+    const sanitizedUser = this.sanitizeUser(user);
+    
+    // Add driver info if user is a driver
+    const responseUser = {
+      ...sanitizedUser,
+      role: user.userType,
+    };
+
+    if (user.userType === 'driver') {
+      responseUser.driver = {
+        id: user._id.toString(),
+        email: user.email,
+        fullName: `${user.firstName} ${user.lastName}`,
+        phone: user.phone,
+        avatarUrl: user.avatarUrl,
+        status: user.isActive ? 'available' : 'offline',
+        rating: 0,
+        totalRides: 0,
+      };
+    }
+
     return {
-      user: this.sanitizeUser(user),
+      user: responseUser,
       ...tokens,
     };
   }
@@ -56,8 +77,29 @@ export class AuthService {
 
     await this.usersService.updateRefreshToken(user._id.toString(), tokens.refreshToken);
 
+    const sanitizedUser = this.sanitizeUser(user);
+    
+    // Add driver info if user is a driver
+    const responseUser = {
+      ...sanitizedUser,
+      role: user.userType,
+    };
+
+    if (user.userType === 'driver') {
+      responseUser.driver = {
+        id: user._id.toString(),
+        email: user.email,
+        fullName: `${user.firstName} ${user.lastName}`,
+        phone: user.phone,
+        avatarUrl: user.avatarUrl,
+        status: user.isActive ? 'available' : 'offline',
+        rating: 0,
+        totalRides: 0,
+      };
+    }
+
     return {
-      user: this.sanitizeUser(user),
+      user: responseUser,
       ...tokens,
     };
   }

@@ -34,6 +34,7 @@ export class AuthController {
     type: AuthResponse,
   })
   async login(@Body() loginDto: LoginDto) {
+    console.log('loginDto', loginDto);
     return this.authService.login(loginDto);
   }
 
@@ -72,5 +73,32 @@ export class AuthController {
   })
   async getCurrentUser(@GetUser() user: any) {
     return user;
+  }
+
+  @Get('profile')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile (alias for /me)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user profile',
+  })
+  async getProfile(@GetUser() user: any) {
+    // Return user data with driver/passenger info if exists
+    return { 
+      user: {
+        ...user,
+        driver: user.userType === 'driver' ? {
+          id: user._id,
+          email: user.email,
+          fullName: `${user.firstName} ${user.lastName}`,
+          phone: user.phone,
+          avatarUrl: user.avatarUrl,
+          status: user.isActive ? 'available' : 'offline',
+          rating: 0,
+          totalRides: 0,
+        } : undefined,
+      }
+    };
   }
 }
