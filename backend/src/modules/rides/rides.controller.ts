@@ -28,7 +28,7 @@ export class RidesController {
     const activeRide = rides.find((ride) => 
       ['pending', 'accepted', 'arrived', 'in_progress'].includes(ride.status)
     );
-    return { ride: activeRide || null };
+    return { ride: activeRide ? this.formatRide(activeRide) : null };
   }
 
   @Get('history')
@@ -43,17 +43,18 @@ export class RidesController {
     const skip = (page - 1) * limit;
     if (user.userType === 'passenger') {
       const rides = await this.ridesService.findByPassengerId(user._id, skip, limit);
-      return { rides, total: rides.length };
+      return { rides: rides.map(r => this.formatRide(r)), total: rides.length };
     } else {
       const rides = await this.ridesService.findByDriverId(user._id, skip, limit);
-      return { rides, total: rides.length };
+      return { rides: rides.map(r => this.formatRide(r)), total: rides.length };
     }
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get ride details' })
   async findOne(@Param('id') id: string) {
-    return this.ridesService.findById(id);
+    const ride = await this.ridesService.findById(id);
+    return this.formatRide(ride);
   }
 
   @Get()
@@ -69,14 +70,43 @@ export class RidesController {
   ) {
     // Get available rides for driver
     if (user.userType === 'driver') {
-      // TODO: Filter by location if lat/lng provided
-      const allRides = await this.ridesService.findByDriverId(user._id, skip, limit);
-      const availableRides = allRides.filter(ride => ride.status === 'pending');
-      return { rides: availableRides };
+      // Get all pending rides (not assigned to any driver)
+      const allRides = await this.ridesService.findByStatus('pending' as any);
+      const availableRides = allRides.filter(ride => !ride.driverId);
+      return { rides: availableRides.slice(skip, skip + limit).map(r => this.formatRide(r)) };
     }
     
     // For passengers, return their rides
-    return this.ridesService.findByPassengerId(user._id, skip, limit);
+    const rides = await this.ridesService.findByPassengerId(user._id, skip, limit);
+    return { rides: rides.map(r => this.formatRide(r)) };
+  }
+
+  // Helper to format ride data
+  private formatRide(ride: any) {
+    const rideObj = ride.toObject ? ride.toObject() : ride;
+    return {
+      ...rideObj,
+      id: rideObj._id?.toString(),
+      driverId: rideObj.driverId?.toString(),
+      passengerId: rideObj.passengerId?.toString(),
+      pickupLocation: {
+        latitude: rideObj.pickupLatitude,
+        longitude: rideObj.pickupLongitude,
+        address: rideObj.pickupAddress,
+      },
+      dropoffLocation: {
+        latitude: rideObj.destinationLatitude,
+        longitude: rideObj.destinationLongitude,
+        address: rideObj.destinationAddress,
+      },
+      estimatedPrice: rideObj.estimatedFare,
+      finalPrice: rideObj.actualFare,
+      passenger: rideObj.passengerId ? {
+        id: rideObj.passengerId?.toString(),
+        fullName: 'Passager', // TODO: populate passenger data
+        phone: '+33612345678',
+      } : undefined,
+    };
   }
 
   @Patch(':id')
@@ -109,7 +139,7 @@ export class RidesController {
       status: 'accepted' as any,
       acceptedAt: new Date(),
     });
-    return { ride };
+    return { ride: this.formatRide(ride) };
   }
 
   @Post(':id/start')
@@ -121,7 +151,7 @@ export class RidesController {
       status: 'in_progress' as any,
       startedAt: new Date(),
     });
-    return { ride };
+    return { ride: this.formatRide(ride) };
   }
 
   @Post(':id/complete')
@@ -166,7 +196,7 @@ export class RidesController {
       status: 'cancelled' as any,
       cancelledAt: new Date(),
     });
-    return { ride };
+    return { ride: this.formatRide(ride) };
   }
 
   @Delete(':id')
