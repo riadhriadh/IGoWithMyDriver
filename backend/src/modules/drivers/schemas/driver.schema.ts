@@ -19,10 +19,18 @@ export class Driver {
 
   @Prop({ type: Object })
   location?: {
-    latitude: number;
-    longitude: number;
-    updatedAt: Date;
+    type: string;
+    coordinates: [number, number]; // [longitude, latitude]
   };
+
+  @Prop()
+  currentLatitude?: number;
+
+  @Prop()
+  currentLongitude?: number;
+
+  @Prop()
+  locationUpdatedAt?: Date;
 
   @Prop({ default: 0 })
   rating: number;

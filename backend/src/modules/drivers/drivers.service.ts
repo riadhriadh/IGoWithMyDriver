@@ -64,7 +64,13 @@ export class DriversService {
     await this.driverModel.updateOne(
       { _id: id },
       {
-        location: { latitude, longitude, updatedAt: new Date() },
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude], // GeoJSON format: [lng, lat]
+        },
+        currentLatitude: latitude,
+        currentLongitude: longitude,
+        locationUpdatedAt: new Date(),
       },
     ).exec();
   }
