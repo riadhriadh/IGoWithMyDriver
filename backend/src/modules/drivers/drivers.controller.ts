@@ -60,10 +60,20 @@ export class DriversController {
     return { message: 'Status updated successfully' };
   }
 
+  @Post('location')
+  @UseGuards(PassportAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current driver location (POST)' })
+  async updateCurrentDriverLocationPost(@GetUser() user: any, @Body() body: { latitude: number; longitude: number }) {
+    const driver = await this.driversService.findByUserId(user._id);
+    await this.driversService.updateLocation(driver._id.toString(), body.latitude, body.longitude);
+    return { message: 'Location updated successfully' };
+  }
+
   @Patch('location')
   @UseGuards(PassportAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update current driver location' })
+  @ApiOperation({ summary: 'Update current driver location (PATCH)' })
   async updateCurrentDriverLocation(@GetUser() user: any, @Body() body: { latitude: number; longitude: number }) {
     const driver = await this.driversService.findByUserId(user._id);
     await this.driversService.updateLocation(driver._id.toString(), body.latitude, body.longitude);
