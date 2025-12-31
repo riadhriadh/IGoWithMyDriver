@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongo:
+    restart: always
+
+  # Redis Cache
+  redis:
+    restart: always
+
+  # NestJS Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taxi-vtc-api
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      # MONGODB_URI and others will be overridden by .env file
+    command: npm run start:prod
+    volumes:
+      # Only mount uploads in prod, not source code
+      - ./uploads:/app/uploads
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Disable Mongo Express in production
+  mongo-express:
+    profiles: [donotstart]
