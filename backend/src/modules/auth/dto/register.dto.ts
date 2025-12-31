@@ -14,9 +14,10 @@ export class RegisterDto {
   @IsString()
   lastName: string;
 
-  @ApiProperty({ example: '+33612345678' })
+  @ApiPropertyOptional({ example: '+33612345678' })
+  @IsOptional()
   @IsPhoneNumber('FR')
-  phone: string;
+  phone?: string;
 
   @ApiProperty({ example: 'Password@123', description: 'Must contain uppercase, lowercase and number' })
   @IsString()

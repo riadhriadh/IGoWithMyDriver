@@ -11,7 +11,7 @@ import { GetUser } from '@common/decorators/get-user.decorator';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -22,6 +22,7 @@ export class AuthController {
     type: AuthResponse,
   })
   async register(@Body() registerDto: RegisterDto) {
+    console.log('registerDto', registerDto);
     return this.authService.register(registerDto);
   }
 
@@ -85,7 +86,7 @@ export class AuthController {
   })
   async getProfile(@GetUser() user: any) {
     // Return user data with driver/passenger info if exists
-    return { 
+    return {
       user: {
         ...user,
         driver: user.userType === 'driver' ? {
